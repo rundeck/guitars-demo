@@ -1,0 +1,53 @@
+<joblist>
+  <job>
+    <schedule>
+      <time hour='00' seconds='0' minute='00' />
+      <weekday day='*' />
+      <month month='*' />
+      <year year='*' />
+    </schedule>    
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <scriptargs>${option.catalog}</scriptargs>
+        <script><![CDATA[#!/bin/bash
+set -eu
+CATALOG=$1
+echo "# Rebuild catalog: $CATALOG"
+echo ""
+echo "- customer: ${RD_NODE_ANVILS_CUSTOMER}"
+echo "- location: ${RD_NODE_ANVILS_LOCATION}"
+echo "- database: ${RD_NODE_NAME:-}"
+echo "Completed."
+exit $?]]></script>
+        </command>
+      </sequence>
+    <nodefilters excludeprecedence="true"> 
+       <include> 
+        <tags>db</tags> 
+      </include> 
+    </nodefilters>  
+    <dispatch> 
+     <threadcount>1</threadcount>  
+     <keepgoing>true</keepgoing> 
+   </dispatch>        
+      <description>rebuild the catalog data</description>
+      <name>nightly_catalog_rebuild</name>
+      <context>
+        <options>
+          <option required='true' name='catalog' enforcedvalues='true' values='partner,shipping-rates,inventory'>
+            <description>catalog name</description>
+          </option>
+        </options>
+      </context>
+      <notification>
+        <onfailure>
+          <email recipients='bizops@guitars.com' />
+        </onfailure>
+        <onsuccess>
+          <email recipients='bizops@guitars.com' />
+        </onsuccess>
+      </notification>    
+      <group></group>
+    </job>
+  </joblist>

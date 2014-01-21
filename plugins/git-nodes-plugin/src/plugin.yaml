@@ -1,0 +1,29 @@
+name: Git Nodes
+version: 1.1
+rundeckPluginVersion: 1.0
+author: alexh
+date: 01/14/2014
+providers:
+    - name: git-pull
+      service: ResourceModelSource
+      plugin-type: script
+      script-interpreter: /bin/bash
+      script-file: nodes.sh
+      title: Git pull
+      description: Runs git pull any time nodes are requested. 
+      resource-format: resourcexml
+      config:
+        - type: String
+          name: repo
+          title: Repository
+          description: The Git repository
+        - type: String
+          name: directory
+          title: directory
+          description: The destination directory         
+
+
+
+
+
+

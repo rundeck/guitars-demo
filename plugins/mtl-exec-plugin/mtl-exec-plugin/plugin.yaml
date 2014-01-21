@@ -1,0 +1,22 @@
+name: mtl-exec
+rundeckPluginVersion: 1.0
+author: Alex Honor
+date: 01/14/2014
+version: 1.0
+providers:
+    - name: mtl-exec
+      service: NodeExecutor
+      title: mtl exec
+      description: Executes the mtl command on the node (bootstrapping mtl if needed).
+      plugin-type: script
+      script-interpreter: /bin/bash
+      script-file: mtl-bootstrap.sh
+      script-args: ${node.username} ${node.hostname} ${exec.command}
+    - name: mtl-copier
+      service: FileCopier
+      title: mtl bootstrap
+      description: Copies mtl to the node
+      plugin-type: script
+      script-interpreter: /bin/bash
+      script-file: ssh-copy.sh
+      script-args: ${node.username} ${node.hostname} ${file-copy.file}

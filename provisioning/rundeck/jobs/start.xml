@@ -1,0 +1,29 @@
+<joblist>   
+   <job> 
+     <name>start</name>  
+       <description>start the web servers</description>  
+     <loglevel>INFO</loglevel>  
+     <group>web</group>  
+    <context> 
+         <options> 
+            <option name="dir" enforcedvalues="true" required="true" 
+             valuesUrl='http://localhost/${job.project}/options/${job.project}-dir.json'/>                  
+          </options>        
+    </context>  
+    <sequence threadcount="1" keepgoing="false" strategy="node-first"> 
+     <command> 
+      <scripturl>http://localhost/${job.project}/scripts/start.sh</scripturl>
+      <scriptargs>${option.dir}</scriptargs>       
+     </command> 
+  </sequence>  
+    <nodefilters excludeprecedence="true"> 
+      <include> 
+        <tags>www</tags> 
+      </include> 
+   </nodefilters>  
+   <dispatch> 
+     <threadcount>1</threadcount>  
+     <keepgoing>true</keepgoing> 
+   </dispatch> 
+  </job>
+</joblist>

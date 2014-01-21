@@ -1,0 +1,36 @@
+<joblist>   
+  <job> 
+   <name>stop</name>  
+   <description>stop the web servers</description>  
+   <loglevel>INFO</loglevel>  
+   <group>web</group>  
+   <context> 
+    <options> 
+      <option name="method" enforcedvalues="true"
+       required="true" 
+       valuesUrl='http://localhost/${job.project}/options/stop-method.json'/> 
+       <option name="dir" enforcedvalues="true" required="true" 
+         valuesUrl='http://localhost/${job.project}/options/${job.project}-dir.json'/>               
+       </options> 
+     </context>  
+     <sequence threadcount="1" keepgoing="false" strategy="node-first"> 
+       <command> 
+         <scripturl>http://localhost/${job.project}/scripts/stop.sh</scripturl>           
+         <scriptargs>${option.dir} ${option.method}</scriptargs> 
+         <errorhandler keepgoingOnSuccess='true'>
+           <scriptfile>http://localhost/${job.project}/scripts/kill.sh</scriptfile>
+           <scriptargs>${option.dir}</scriptargs>              
+         </errorhandler>
+       </command> 
+     </sequence>  
+     <nodefilters excludeprecedence="true"> 
+       <include> 
+        <tags>www</tags> 
+      </include> 
+    </nodefilters>  
+    <dispatch> 
+     <threadcount>1</threadcount>  
+     <keepgoing>true</keepgoing> 
+   </dispatch> 
+ </job>
+</joblist>
