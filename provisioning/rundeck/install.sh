@@ -54,6 +54,11 @@ yum -y install rundeck
 chmod 755 ~rundeck
 
 # Configure the system
+
+mkdir -p /var/rundeck/lib/mtl
+cp /vagrant/mtl/src/mtl /var/rundeck/lib/mtl/mtl
+chown -R rundeck:rundeck /var/rundeck/lib
+
 cp /vagrant/provisioning/rundeck/id_rsa* /var/lib/rundeck/.ssh/
 chown rundeck:rundeck /var/lib/rundeck/.ssh/
 cp /vagrant/plugins/mtl-exec-plugin/mtl-exec-plugin.zip /var/lib/rundeck/libext/

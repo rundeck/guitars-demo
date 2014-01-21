@@ -8,7 +8,7 @@ shift;
 
 set -eu
 
-MTL_FILE=$RD_PLUGIN_BASE/mtl
+MTL_FILE=/var/rundeck/lib/mtl/mtl
 
 #
 # Install mtl if it isn't already on the node.
