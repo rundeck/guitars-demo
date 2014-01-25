@@ -17,13 +17,19 @@ Vagrant.configure("2") do |config|
     rundeck.vm.network :private_network, ip: "#{RDIP}"
     rundeck.vm.provision :shell, :path => "provisioning/rundeck/install.sh", :args => "#{RDIP} #{RUNDECK_YUM_REPO}"
     rundeck.vm.provision :shell, :path => "provisioning/install-httpd.sh", :args=> "#{PROJECT}"
-    rundeck.vm.provision :shell, :path => "provisioning/rundeck/add-project.sh", :args => "#{PROJECT} 192.168.50.21"
+    rundeck.vm.provision :shell, :path => "provisioning/rundeck/add-project.sh", :args => "stg 192.168.50.21"
+    rundeck.vm.provision :shell, :path => "provisioning/rundeck/add-project.sh", :args => "prod 192.168.50.22"
   end
 
-  config.vm.define :app1 do |app1|
-    app1.vm.hostname = "app1"
-    app1.vm.network :private_network, ip: "192.168.50.21"
-    app1.vm.provision :shell, :path => "provisioning/bootstrap-node.sh", :args => "192.168.50.21 http://#{RDIP}:4440 #{PROJECT}"
+  config.vm.define :stg1 do |stg1|
+    stg1.vm.hostname = "stg1"
+    stg1.vm.network :private_network, ip: "192.168.50.21"
+    stg1.vm.provision :shell, :path => "provisioning/bootstrap-node.sh", :args => "192.168.50.21 http://#{RDIP}:4440 stg"
+  end
+  config.vm.define :prd1 do |prd1|
+    prd1.vm.hostname = "prd1"
+    prd1.vm.network :private_network, ip: "192.168.50.22"
+    prd1.vm.provision :shell, :path => "provisioning/bootstrap-node.sh", :args => "192.168.50.22 http://#{RDIP}:4440 prod"
   end
 
 
