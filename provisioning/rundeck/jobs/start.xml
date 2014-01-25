@@ -1,29 +1,45 @@
 <joblist>   
-   <job> 
-     <name>start</name>  
-       <description>start the web servers</description>  
-     <loglevel>INFO</loglevel>  
-     <group>web</group>  
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <description>start web service</description>  
+        <scriptargs>${option.dir}</scriptargs>  
+        <script><![CDATA[#!/bin/bash
+#/ usage: start.sh ?dir?
+set -eu
+[[ $# != 1 ]] && {
+    grep '^#/ usage:' <"$0" | cut -c4- >&2
+	exit 2	
+}
+DIR=$1
+
+mkdir -p $DIR
+echo $$ > $DIR/pid
+
+mtl attribute -n web:pid -v $$
+mtl attribute -n web:state -v RUNNING
+
+echo "- Web started (pid=$$)"
+]]></script> 
+      </command> 
+    </sequence>  
+    <description>start the web servers</description>  
+    <name>start</name>  
     <context> 
-         <options> 
-            <option name="dir" enforcedvalues="true" required="true" 
-             valuesUrl='http://localhost/${job.project}/options/${job.project}-dir.json'/>                  
-          </options>        
+      <options> 
+        <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/> 
+      </options> 
     </context>  
-    <sequence threadcount="1" keepgoing="false" strategy="node-first"> 
-     <command> 
-      <scripturl>http://localhost/${job.project}/scripts/start.sh</scripturl>
-      <scriptargs>${option.dir}</scriptargs>       
-     </command> 
-  </sequence>  
-    <nodefilters excludeprecedence="true"> 
-      <include> 
-        <tags>www</tags> 
-      </include> 
-   </nodefilters>  
-   <dispatch> 
-     <threadcount>1</threadcount>  
-     <keepgoing>true</keepgoing> 
-   </dispatch> 
-  </job>
+    <dispatch> 
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: www</filter> 
+    </nodefilters>  
+    <group>web</group> 
+  </job>  
 </joblist>

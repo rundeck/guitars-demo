@@ -1,34 +1,54 @@
 <joblist>   
- <job> 
-   <name>Status</name>  
-   <description>Check the status of the app</description>  
-   <loglevel>INFO</loglevel>  
-   <multipleExecutions>true</multipleExecutions>     
-   <group></group>  
-   <context> 
-     <options> 
 
-       <option name="dir" enforcedvalues="true" required="true" 
-         valuesUrl='http://localhost/${job.project}/options/${job.project}-dir.json'/> 
-       </options> 
-     </context>  
-     <sequence threadcount="1" keepgoing="true" strategy="node-first"> 
-       <command> 
-        <scripturl>http://localhost/${job.project}/scripts/status.sh</scripturl>
-        <scriptargs>${option.dir}</scriptargs>    
-        <errorhandler keepgoingOnSuccess='true'>
-          <exec>echo "Continuing..."</exec>
-        </errorhandler>         
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <multipleExecutions>true</multipleExecutions>  
+    <sequence keepgoing="true" strategy="node-first"> 
+      <command> 
+        <description>check web service</description>  
+        <scriptargs>${option.dir}</scriptargs>  
+        <script><![CDATA[#!/bin/bash
+#/ usage: $0  ?dir?
+set -eu
+[[ $# != 1 ]] && {
+    grep '^#/ usage:' <"$0" | cut -c4- >&2
+	exit 2	
+}
+
+DIR=$1;shift;
+
+if ! PID=$(cat $DIR/pid  2>/dev/null)
+then
+    mtl attribute -n web:state -v DOWN
+    status=1
+else
+    mtl attribute -n web:state -v RUNNING
+    mtl attribute -n web:pid -v $PID
+
+    status=0
+fi
+
+mtl attributes -n "web:*" -v
+
+exit $status]]></script> 
       </command> 
-    </sequence>
-    <nodefilters excludeprecedence="true"> 
-      <include> 
-        <tags>www</tags> 
-      </include> 
-    </nodefilters>  
+    </sequence>  
+    <description>Check the status of the app</description>  
+    <name>Status</name>  
+    <context> 
+      <options> 
+        <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/> 
+      </options> 
+    </context>  
     <dispatch> 
-     <threadcount>1</threadcount>  
-     <keepgoing>true</keepgoing> 
-   </dispatch> 
- </job>   
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: www</filter> 
+    </nodefilters>  
+    <group>web</group> 
+  </job>   
 </joblist>

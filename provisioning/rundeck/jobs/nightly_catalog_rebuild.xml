@@ -1,15 +1,15 @@
 <joblist>
-  <job>
-    <schedule>
-      <time hour='00' seconds='0' minute='00' />
-      <weekday day='*' />
-      <month month='*' />
-      <year year='*' />
-    </schedule>    
-    <loglevel>INFO</loglevel>
-    <sequence keepgoing='false' strategy='node-first'>
-      <command>
-        <scriptargs>${option.catalog}</scriptargs>
+ <job> 
+    <schedule> 
+      <time seconds="0" minute="00" hour="00"/>  
+      <weekday day="*"/>  
+      <month month="*"/>  
+      <year year="*"/> 
+    </schedule>  
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <scriptargs>${option.catalog}</scriptargs>  
         <script><![CDATA[#!/bin/bash
 set -eu
 CATALOG=$1
@@ -19,35 +19,35 @@ echo "- customer: ${RD_NODE_ANVILS_CUSTOMER}"
 echo "- location: ${RD_NODE_ANVILS_LOCATION}"
 echo "- database: ${RD_NODE_NAME:-}"
 echo "Completed."
-exit $?]]></script>
-        </command>
-      </sequence>
-    <nodefilters excludeprecedence="true"> 
-       <include> 
-        <tags>db</tags> 
-      </include> 
-    </nodefilters>  
+exit $?]]></script> 
+      </command> 
+    </sequence>  
+    <description>rebuild the catalog data</description>  
+    <name>nightly_catalog_rebuild</name>  
+    <context> 
+      <options> 
+        <option name="catalog" values="inventory,partner,shipping-rates" enforcedvalues="true" required="true"> 
+          <description>catalog name</description> 
+        </option> 
+      </options> 
+    </context>  
+    <notification> 
+      <onsuccess> 
+        <email recipients="bizops@guitars.com"/> 
+      </onsuccess>  
+      <onfailure> 
+        <email recipients="bizops@guitars.com"/> 
+      </onfailure> 
+    </notification>  
     <dispatch> 
-     <threadcount>1</threadcount>  
-     <keepgoing>true</keepgoing> 
-   </dispatch>        
-      <description>rebuild the catalog data</description>
-      <name>nightly_catalog_rebuild</name>
-      <context>
-        <options>
-          <option required='true' name='catalog' enforcedvalues='true' values='partner,shipping-rates,inventory'>
-            <description>catalog name</description>
-          </option>
-        </options>
-      </context>
-      <notification>
-        <onfailure>
-          <email recipients='bizops@guitars.com' />
-        </onfailure>
-        <onsuccess>
-          <email recipients='bizops@guitars.com' />
-        </onsuccess>
-      </notification>    
-      <group></group>
-    </job>
-  </joblist>
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: db</filter> 
+    </nodefilters>  
+    <group>db</group> 
+  </job>  
+</joblist>

@@ -1,0 +1,35 @@
+<joblist>
+  <job>
+    <id>163ce109-8338-4481-bd50-c22be9426e12</id>
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <scriptargs>${option.version}</scriptargs>
+        <script><![CDATA[#!/usr/bin/env bash
+VERSION=$1
+mtl attribute -n package:guitar --remove]]></script>
+      </command>
+    </sequence>
+    <description>the un deploy the guitars app</description>
+    <name>UnDeploy</name>
+    <context>
+      <project>prod</project>
+      <options>
+        <option name='version' values='1.0,1.1,2.0,2.1' enforcedvalues='true' required='true'>
+          <description>the package version</description>
+        </option>
+      </options>
+    </context>
+    <dispatch>
+      <threadcount>1</threadcount>
+      <keepgoing>false</keepgoing>
+      <excludePrecedence>true</excludePrecedence>
+      <rankOrder>ascending</rankOrder>
+    </dispatch>
+    <uuid>163ce109-8338-4481-bd50-c22be9426e12</uuid>
+    <nodefilters>
+      <filter>tags: www web:state: .*</filter>
+    </nodefilters>
+    <group>release</group>
+  </job>
+</joblist>

@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<joblist> 
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <scriptargs>${option.repository} ${option.release} ${option.packages}</scriptargs>  
+        <script><![CDATA[#!/bin/bash
+set -eu
+[[ $# != 3 ]] && {
+  echo >&2 'usage: $0 repository release pkg1,pkg2,pkgN'
+  exit 2
+}
+REPOSITORY=$1 RELEASE=$2 PACKAGELIST=$3
+
+echo "# PROMOTE"
+echo "## $REPOSITORY/$RELEASE"
+echo "## Promote $REPOSITORY/$RELEASE..."
+
+PACKAGES=( ${PACKAGELIST//,/ } )
+echo "number  packages: ${#PACKAGES[*]}"
+echo
+for package in ${PACKAGES[*]:-}
+do
+   echo "- $REPOSITORY/$RELEASE/$package"
+done
+
+#mtl attribute -n release:repo -v $REPOSITORY
+#mtl attribute -n release:name -v $RELEASE
+#mtl attribute -n release:packages -v "$PACKAGELIST"
+
+exit $?]]></script> 
+      </command> 
+    </sequence>  
+    <description>promote the packages to the ops repository.</description>  
+    <name>Promote</name>  
+    <context> 
+      <options> 
+        <option name="packages" valuesUrl="http://localhost/guitars/options/packages/${option.release.value}.json" enforcedvalues="true" required="true" multivalued="true" delimiter=","> 
+          <description>packages versions</description> 
+        </option>  
+        <option name="release" valuesUrl="http://localhost/guitars/options/releases/${option.repository.value}.json" enforcedvalues="true" required="true"> 
+          <description>release tag</description> 
+        </option>  
+        <option name="repository" valuesUrl="http://localhost/guitars/options/repositories.json" enforcedvalues="true" required="true"> 
+          <description>repository name</description> 
+        </option> 
+      </options> 
+    </context>  
+    <group>release</group> 
+  </job>  
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <jobref name="stop" group="web"> 
+          <arg line="-dir ${option.dir} -method ${option.method}"/> 
+        </jobref> 
+      </command>  
+      <command> 
+        <jobref name="start" group="web"> 
+          <arg line="-dir ${option.dir}"/> 
+        </jobref> 
+      </command> 
+    </sequence>  
+    <description>restart the web servers</description>  
+    <name>Restart</name>  
+    <context> 
+      <options> 
+        <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/>  
+        <option name="method" valuesUrl="http://localhost/guitars/options/stop-method.json" enforcedvalues="true"/> 
+      </options> 
+    </context>  
+    <dispatch> 
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: www</filter> 
+    </nodefilters>  
+    <group>web</group> 
+  </job>  
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <multipleExecutions>true</multipleExecutions>  
+    <sequence keepgoing="true" strategy="node-first"> 
+      <command> 
+        <description>check web service</description>  
+        <scriptargs>${option.dir}</scriptargs>  
+        <script><![CDATA[#!/bin/bash
+#/ usage: $0  ?dir?
+set -eu
+[[ $# != 1 ]] && {
+    grep '^#/ usage:' <"$0" | cut -c4- >&2
+	exit 2	
+}
+
+DIR=$1;shift;
+
+if ! PID=$(cat $DIR/pid  2>/dev/null)
+then
+    mtl attribute -n web:state -v DOWN
+    status=1
+else
+    mtl attribute -n web:state -v RUNNING
+    mtl attribute -n web:pid -v $PID
+
+    status=0
+fi
+
+mtl attributes -n "web:*" -v
+
+exit $status]]></script> 
+      </command> 
+    </sequence>  
+    <description>Check the status of the app</description>  
+    <name>Status</name>  
+    <context> 
+      <options> 
+        <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/> 
+      </options> 
+    </context>  
+    <dispatch> 
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: www</filter> 
+    </nodefilters>  
+    <group>web</group> 
+  </job>  
+  <job> 
+    <schedule> 
+      <time seconds="0" minute="00" hour="00"/>  
+      <weekday day="*"/>  
+      <month month="*"/>  
+      <year year="*"/> 
+    </schedule>  
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <scriptargs>${option.catalog}</scriptargs>  
+        <script><![CDATA[#!/bin/bash
+set -eu
+CATALOG=$1
+echo "# Rebuild catalog: $CATALOG"
+echo ""
+echo "- customer: ${RD_NODE_ANVILS_CUSTOMER}"
+echo "- location: ${RD_NODE_ANVILS_LOCATION}"
+echo "- database: ${RD_NODE_NAME:-}"
+echo "Completed."
+exit $?]]></script> 
+      </command> 
+    </sequence>  
+    <description>rebuild the catalog data</description>  
+    <name>nightly_catalog_rebuild</name>  
+    <context> 
+      <options> 
+        <option name="catalog" values="inventory,partner,shipping-rates" enforcedvalues="true" required="true"> 
+          <description>catalog name</description> 
+        </option> 
+      </options> 
+    </context>  
+    <notification> 
+      <onsuccess> 
+        <email recipients="bizops@guitars.com"/> 
+      </onsuccess>  
+      <onfailure> 
+        <email recipients="bizops@guitars.com"/> 
+      </onfailure> 
+    </notification>  
+    <dispatch> 
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: db</filter> 
+    </nodefilters>  
+    <group>db</group> 
+  </job>  
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <description>start web service</description>  
+        <scriptargs>${option.dir}</scriptargs>  
+        <script><![CDATA[#!/bin/bash
+#/ usage: start.sh ?dir?
+set -eu
+[[ $# != 1 ]] && {
+    grep '^#/ usage:' <"$0" | cut -c4- >&2
+	exit 2	
+}
+DIR=$1
+
+mkdir -p $DIR
+echo $$ > $DIR/pid
+
+mtl attribute -n web:pid -v $PID
+mtl attribute -n web:start.time -v "$(date)"
+
+echo "- Web started (pid=$$)"
+]]></script> 
+      </command> 
+    </sequence>  
+    <description>start the web servers</description>  
+    <name>start</name>  
+    <context> 
+      <options> 
+        <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/> 
+      </options> 
+    </context>  
+    <dispatch> 
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: www</filter> 
+    </nodefilters>  
+    <group>web</group> 
+  </job>  
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <errorhandler keepgoingOnSuccess="true"> 
+          <scriptargs>${option.dir}</scriptargs>  
+          <script><![CDATA[#!/bin/bash
+#/ usage: kill.sh ?dir?
+
+set -e
+set -u
+
+[[ $# != 1 ]] && {
+    grep '^#/ usage:' <"$0" | cut -c4- >&2
+	exit 2	
+}
+DIR=$1
+mtl attribute -n web:kill.time -v "$(date)"
+
+echo 'Web killed!'
+]]></script> 
+        </errorhandler>  
+        <description>stop web service</description>  
+        <scriptargs>${option.dir} ${option.method}</scriptargs>  
+        <script><![CDATA[#!/bin/bash
+#/ usage: stop.sh ?dir? ?method? 
+set -eu
+[[ $# != 2 ]] && {
+    grep '^#/ usage:' <"$0" | cut -c4- >&2
+	exit 2
+}
+DIR=$1
+METHOD=$2
+
+if [[ -f $DIR/pid ]]
+then	
+	pid=$(cat $DIR/pid)	
+	# kill $pid ;
+	rm -f $DIR/pid
+	echo "- Web stopped (pid=${pid}) using method: $METHOD"
+
+   mtl attribute -n web:stop.time -v "$(date)"
+   mtl attribute -n web:stop.method -v "$METHOD"
+    
+fi
+
+]]></script> 
+      </command> 
+    </sequence>  
+    <description>stop the web servers</description>  
+    <name>stop</name>  
+    <context> 
+      <options> 
+        <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/>  
+        <option name="method" valuesUrl="http://localhost/guitars/options/stop-method.json" enforcedvalues="true" required="true"/> 
+      </options> 
+    </context>  
+    <dispatch> 
+      <threadcount>1</threadcount>  
+      <keepgoing>true</keepgoing>  
+      <excludePrecedence>true</excludePrecedence>  
+      <rankOrder>ascending</rankOrder> 
+    </dispatch>  
+    <nodefilters> 
+      <filter>tags: www</filter> 
+    </nodefilters>  
+    <group>web</group> 
+  </job> 
+</joblist>

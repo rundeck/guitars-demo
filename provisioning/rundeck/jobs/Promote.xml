@@ -1,9 +1,9 @@
 <joblist>
-  <job>
-    <loglevel>INFO</loglevel>
-    <sequence keepgoing='false' strategy='node-first'>
-      <command>
-        <scriptargs>${option.repository} ${option.release} ${option.packages}</scriptargs>
+  <job> 
+    <loglevel>INFO</loglevel>  
+    <sequence keepgoing="false" strategy="node-first"> 
+      <command> 
+        <scriptargs>${option.repository} ${option.release} ${option.packages}</scriptargs>  
         <script><![CDATA[#!/bin/bash
 set -eu
 [[ $# != 3 ]] && {
@@ -24,24 +24,29 @@ do
    echo "- $REPOSITORY/$RELEASE/$package"
 done
 
-exit $?]]></script>
-      </command>
-    </sequence>
-    <description>promote the packages to the ops repository.</description>
-    <name>Promote</name>
-    <context>
-      <options>
-        <option required='true' name='repository' enforcedvalues='true' valuesUrl='http://localhost/${job.project}/options/repositories.json'>
-          <description>repository name</description>
-        </option>        
-        <option required='true' name='release' enforcedvalues='true' valuesUrl='http://localhost/${job.project}/options/releases/${option.repository.value}.json'>
-          <description>release tag</description>
-        </option>
-        <option required='true' multivalued='true' name='packages' enforcedvalues='true' valuesUrl='http://localhost/${job.project}/options/packages/${option.release.value}.json' delimiter=','>
-          <description>packages versions</description>
-        </option>
-      </options>
-    </context>
-    <group></group>
-  </job>
+#mtl attribute -n release:repo -v $REPOSITORY
+#mtl attribute -n release:name -v $RELEASE
+#mtl attribute -n release:packages -v "$PACKAGELIST"
+
+exit $?]]></script> 
+      </command> 
+    </sequence>  
+    <description>promote the packages to the ops repository.</description>  
+    <name>Promote</name>  
+    <context> 
+      <options> 
+        <option name="packages" valuesUrl="http://localhost/guitars/options/packages/${option.release.value}.json" enforcedvalues="true" required="true" multivalued="true" delimiter=","> 
+          <description>packages versions</description> 
+        </option>  
+        <option name="release" valuesUrl="http://localhost/guitars/options/releases/${option.repository.value}.json" enforcedvalues="true" required="true"> 
+          <description>release tag</description> 
+        </option>  
+        <option name="repository" valuesUrl="http://localhost/guitars/options/repositories.json" enforcedvalues="true" required="true"> 
+          <description>repository name</description> 
+        </option> 
+      </options> 
+    </context>  
+    <group>release</group> 
+  </job>  
+
 </joblist>
