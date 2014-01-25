@@ -2,6 +2,11 @@
 
 set -eu
 
+# Install mtl executable
+
+cp /vagrant/mtl/src/mtl /usr/bin/mtl
+chmod 755 /usr/bin/mtl
+
 # Configure SSHD to pass environment variables to shell.
 if ! grep -q "AcceptEnv RD_" /etc/ssh/sshd_config
 then	
@@ -30,6 +35,7 @@ do
 	cat /vagrant/provisioning/rundeck/id_rsa.pub >> /home/$user/.ssh/authorized_keys
 	chmod 600 /home/$user/.ssh/authorized_keys
 	chown -R $user:$user /home/$user/.ssh
+    echo "Configured ssh."
 done
 
 echo "done."
