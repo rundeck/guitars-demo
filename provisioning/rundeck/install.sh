@@ -74,7 +74,7 @@ chown rundeck /var/lib/rundeck/libext/git-nodes-plugin.zip
 sed -i "s^grails.serverURL=.*^grails.serverURL=http://$RDIP:4440^g" /etc/rundeck/rundeck-config.properties 
 
 # Add the ACL
-cp /vagrant/provisioning/rundeck/*.aclpolicy /etc/rundeck/
+cp /vagrant/provisioning/rundeck/aclpolicy/* /etc/rundeck/
 chown rundeck:rundeck /etc/rundeck/*.aclpolicy
 chmod 444 /etc/rundeck/*.aclpolicy
 
