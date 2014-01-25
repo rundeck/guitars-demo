@@ -6,14 +6,13 @@ The purpose of this example is to show how dev and ops teams can
 collaborate around how to restart the web tier, manage software
 promotions, run status health checks and a nightly batch job.
 
-This is a single-machine vagrant configuration that installs
+This is a multi-machine vagrant configuration that installs
 and configures a rundeck instance and an Apache httpd instance.
 
 The httpd instance is used as a simple web-based file
 repository from which scripts and job options are shared to Rundeck. 
 
-
-To run this example, you will bring up a VM using vagrant, log in 
+To run this example, you will bring up VMs using vagrant, log in 
 to Rundeck and perform certain jobs.
 
 ## Vagrant configuration
@@ -21,10 +20,10 @@ to Rundeck and perform certain jobs.
 This vagrant configuration defines one virtual machine:
 
 * **rundeck**: The rundeck instance used by all the teams.
-* **app1**: Target node where the application deployments reside.
+* **stg1**: Target node where the application deployments reside.
+* **prd1**: Target node where the application deployments reside.
 
 The rundeck VMs run a centos base box and installs software via yum/rpm.
-
 
 ### Requirements
 
@@ -39,8 +38,8 @@ Start up the VMs like so:
 
 You can access the rundeck and httpd instances from your host machine using the following URLs:
 
-* rundeck: http://192.168.50.2:4440
-* httpd: http://192.168.50.2/guitars
+* rundeck: http://192.168.50.3:4440
+* httpd: http://192.168.50.3/guitars
 
 
 ## Nodes
@@ -71,10 +70,12 @@ Clicking on the "guitars" tag will list all the guitars nodes again.
 The rundeck instance will come up with the following demo jobs 
 already loaded. All jobs are organized under a common group called "guitars".
 
-- Promote - 'promote the packages'
+- db/nightly_catalog_rebuild - 'rebuild the catalog data'
+- release/Deploy - 'deploy the packages'
+- release/Promote - 'promote the packages'
+- release/UnDeploy - 'remove the packages'
 - web/Restart - 'restart the web servers'
-- Status - 'Check the status of guitars'
-- nightly_catalog_rebuild - 'rebuild the catalog data'
+- web/Status - 'check the status of guitars'
 - web/start - 'start the web servers'
 - web/stop - 'stop the web servers'
 
