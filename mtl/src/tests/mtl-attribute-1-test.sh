@@ -31,14 +31,15 @@ it_gets_value() {
 	tmpdir=$(mktemp -d "/tmp/mtl-attribute.XXXX")
 	pushd $tmpdir
 
-	mkdir attributes
-	mkdir attributes/node-executor
-	cat > attributes/node-executor/metadata <<EOF
+    mtl init
+	mkdir -p .mtl/attributes
+	mkdir -p .mtl/attributes/node-executor
+	cat > .mtl/attributes/node-executor/metadata <<EOF
 NAME="node-executor"
 VALUE="mtl-exec"
 EOF
 		
-	test "mtl-exec" = $(mtl attribute --name node-executor)
+	test "mtl-exec" = "$(mtl attribute --name node-executor)"
 
 	rm -r $tmpdir
 }
@@ -47,29 +48,44 @@ it_sets_value() {
 	source ../mtl
 	tmpdir=$(mktemp -d "/tmp/mtl-attribute.XXXX")
 	pushd $tmpdir
-	mkdir attributes
+    mtl init
+
 
 	mtl attribute --name node-executor --value mtl-exec		
-	test "mtl-exec" = $(mtl attribute --name node-executor)
+	test "mtl-exec" = "$(mtl attribute --name node-executor)"
 
 	mtl attribute --name stuff:node-executor --value mtl-exec		
-	test "mtl-exec" = $(mtl attribute --name stuff:node-executor)
+	test "mtl-exec" = "$(mtl attribute --name stuff:node-executor)"
 
 	mtl attribute --name some.stuff:node-executor --value mtl-exec		
-	test "mtl-exec" = $(mtl attribute --name some.stuff:node-executor)
+	test "mtl-exec" = "$(mtl attribute --name some.stuff:node-executor)"
 
 	mtl attribute --name some.stuff:node-executor.bar --value bar
-	test "bar" = $(mtl attribute --name some.stuff:node-executor.bar)
+	test "bar" = "$(mtl attribute --name some.stuff:node-executor.bar)"
 
-
+    popd
 	rm -r $tmpdir
+}
+
+it_sets_empty_value() {
+	source ../mtl
+	tmpdir=$(mktemp -d "/tmp/mtl-attribute.XXXX")
+	pushd $tmpdir
+    mtl init
+
+
+	mtl attribute --name description --value ''
+	test "" = "$(mtl attribute --name description)"
+
+    popd
+    rm -r $tmpdir
 }
 
 it_clears_value() {
 	source ../mtl
 	tmpdir=$(mktemp -d "/tmp/mtl-attribute.XXXX")
 	pushd $tmpdir
-	mkdir attributes
+    mtl init
 
 	mtl attribute --name ssh-test --value testy		
 
@@ -77,6 +93,7 @@ it_clears_value() {
 	value=$(mtl attribute --name ssh-test)
 	test -z "$value"
 
+    popd
 	rm -r $tmpdir
 }
 
@@ -85,13 +102,14 @@ it_removes_attribute() {
 	source ../mtl
 	tmpdir=$(mktemp -d "/tmp/mtl-attribute.XXXX")
 	pushd $tmpdir
-	mkdir attributes
+	mkdir -p .mtl/attributes
 
 	mtl attribute --name ssh-test --value node-executor		
 
 	mtl attribute --name ssh-test --remove
 	! mtl attribute --name ssh-test
 
+    popd
 	rm -r $tmpdir
 }
 

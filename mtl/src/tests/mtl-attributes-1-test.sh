@@ -13,6 +13,7 @@
 
 describe mtl attributes
 
+
 it_prints_usage() {
 	source ../mtl
 	test "mtl attributes -n|--name <> [-v|--value <>]" \
@@ -23,15 +24,16 @@ it_matches_names() {
 	source ../mtl
 	tmpdir=$(mktemp -d /tmp/mtl-attributes.XXXX)
 	pushd $tmpdir
+    mtl init
 
-	mkdir attributes
-	mkdir attributes/node-executor
-	cat > attributes/node-executor/metadata <<-EOF
+	mkdir -p .mtl/attributes
+	mkdir -p .mtl/attributes/node-executor
+	cat > .mtl/attributes/node-executor/metadata <<-EOF
 	NAME="node-executor"
 	VALUE="mtl-exec"
 	EOF
-	mkdir attributes/file-copier
-	cat > attributes/file-copier/metadata <<-EOF
+	mkdir -p .mtl/attributes/file-copier
+	cat > .mtl/attributes/file-copier/metadata <<-EOF
 	NAME="file-copier"
 	VALUE="mtl-copy"
 	EOF
@@ -48,6 +50,7 @@ it_matches_names() {
 	test file-copier = "${list[0]}"
 	test node-executor = "${list[1]}"
 
+    popd
 	rm -r $tmpdir
 }
 
@@ -55,15 +58,16 @@ it_lists_values() {
 	source ../mtl
 	tmpdir=$(mktemp -d /tmp/mtl-attributes.XXXX)
 	pushd $tmpdir
+    mtl init
 
-	mkdir attributes
-	mkdir attributes/file-copier
-	cat > attributes/file-copier/metadata <<-EOF
+	mkdir -p .mtl/attributes
+	mkdir -p .mtl/attributes/file-copier
+	cat > .mtl/attributes/file-copier/metadata <<-EOF
 	NAME="file-copier"
 	VALUE="mtl-copy"
 	EOF
-	mkdir attributes/node-executor
-	cat > attributes/node-executor/metadata <<-EOF
+	mkdir -p .mtl/attributes/node-executor
+	cat > .mtl/attributes/node-executor/metadata <<-EOF
 	NAME="node-executor"
 	VALUE="mtl-exec"
 	EOF
@@ -74,5 +78,6 @@ it_lists_values() {
 	list=( $(mtl attributes --value) )
 	test ${#list[*]} -eq 4
 
+    popd
 	rm -r $tmpdir
 }

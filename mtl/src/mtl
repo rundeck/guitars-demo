@@ -105,13 +105,8 @@ mtl_init() {
     	shift
 	done
 
-	[[ -z "$dir" ]] && { dir="$(pwd)"  ; }
-	[[ -z "$name" ]] && { name="$(hostname)" ;}
-
-    # Generate a git repo for this node.
-
-    
-
+	[[ -z "${dir:-}" ]] && { dir="$(pwd)"  ; }
+	[[ -z "${name:-}" ]] && { name="$(hostname)" ;}
 
 	echo >&2 "initializing instance directory: $dir/.mtl"
 	# Create the directory structure
@@ -124,10 +119,6 @@ CREATED_AT="$(date)"
 CREATED_BY="$(whoami)"
 EOF
 
-    if [[ -n "${repo:-}" && "${fetch:-}" == "true" ]]
-    then 
-        mtl fetch --repo "$repo"
-    fi
 }
 
 mtl_info() {
@@ -148,20 +139,19 @@ mtl_info() {
 	done
 	: ${dir:=$(pwd)}
 
-	[[ -z "$property" ]] && { echo >&2 "$usage"; return 2; }
+	[[ -z "${property:-}" ]] && { echo >&2 "$usage"; return 2; }
 	mtl_property_get ${dir}/.mtl/metadata ${property}
     return $?
 }
 
 mtl_attribute() {
 	local usage='mtl attribute --name|-n <> [--value|-v <>] [--clear|--remove]'
-	local name value clear remove
-
+	local name value value_flag clear remove
 	while [ "$#" -gt 0 ]; do
     	OPT="$1"
     	case "$OPT" in
-       		-n|--name) name=$2 ; shift ;;
-       		-v|--value) value=$2 ; shift ;;
+       		-n|--name) name="$2" ; shift ;;
+       		-v|--value) value="$2" value_flag=true ; shift ;;
        		--clear) clear=true ;;
        		--remove) remove=true ;;
 			--usage) printf "%s\n" "$usage" ; return 0 ;;
@@ -171,42 +161,42 @@ mtl_attribute() {
     	esac
     	shift
 	done
-	: ${dir:=$(pwd)}
+	[[ -z "${name:-}" ]] && { echo >&2 "$usage"; return 2; }
 
-	[[ -z "$name" ]] && { echo >&2 "$usage"; return 2; }
+	local mtl_home=$(mtl info --property DIR)
+	local attribute="${mtl_home:=$(pwd)}/.mtl/attributes/${name}/metadata"
 
-	local metadata="${MTL_HOME:=$(pwd)}/attributes/${name}/metadata"
-
-
-	[[ "true" == $clear ]] && {
-		mtl_property_set ${metadata} VALUE=""
+	[[ "true" == ${clear:-} ]] && {
+		mtl_property_set ${attribute} VALUE=""
 		return $?
 	}
-
-	[[ "true" == $remove ]] && {
-		[[ -f ${metadata} ]] && rm -fr $(dirname ${metadata})
+	[[ "true" == ${remove:-} ]] && {
+		[[ -f ${attribute} ]] && rm -fr $(dirname ${attribute})
 		return $?
 	}
-
-	[[ -z "$value" ]] && {
-		mtl_property_get ${metadata} VALUE
+	[[ -z "${value_flag}" ]] && {
+		mtl_property_get ${attribute} VALUE
 		return $?
 	}
 
 	# Set the attribute value
-	[[ ! -f ${metadata} ]] && {
-		mkdir -p $(dirname ${metadata})
-		touch $metadata
+	[[ ! -f ${attribute} ]] && {
+		mkdir -p $(dirname ${attribute})
+		touch $attribute
 	}
-	mtl_property_set ${metadata} VALUE="$value"
+	mtl_property_set ${attribute} VALUE="$value"
 
     return $?
 }
 
 mtl_attributes() {
 	local usage='mtl attributes -n|--name <> [-v|--value <>]'
-	local name value
-	local attributes=${MTL_HOME:=$(pwd)}/attributes
+	local name value mtl_home attributes
+	#: ${mtl_home:=$(mtl info --property DIR)/.mtl}
+	#attributes=${mtl_home:=$HOME/.mtl}/attributes
+
+	mtl_home=$(mtl info --property DIR)
+	attributes="${mtl_home:=$(pwd)}/.mtl/attributes"
 
 	while [ "$#" -gt 0 ]; do
     	OPT="$1"
@@ -282,7 +272,7 @@ mtl_fetch() {
 	: ${repo:=$(mtl info --property REPO)}
 	: ${dir:=$(mtl info --property DIR)}
 
-	[[ -z "${repo:-}" ]] && { printf >&2 'syntax: repo not specified\n'; return 2; }
+	[[ -z "${repo:-}" ]] && { printf >&2 'mtl syntax: repo not specified\n'; return 2; }
 
 	cd "$dir"
 	if [[ ! -d .git ]] 
@@ -354,13 +344,17 @@ mtl() {
 			mtl_commands
 			printf "\nSee 'mtl <command> --usage' for command usage.\n"
 			return 2 ;;
-		*) printf >&2 "syntax: unknown command: $1\n"
+		*) printf >&2 "mtl syntax: unknown command: $1\n"
 		   return 2
 	esac
 }
 
-mtl "$@"
+if [[ "${BASH_SOURCE:-}" != "$0" && "$0" != "bash" ]]
+then
+    return; # Stop sourcing the file here.
+fi
 
+mtl "$@"
 
 
 # More
