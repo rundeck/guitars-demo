@@ -1,0 +1,48 @@
+name: script-based remote script node step plugin
+version: 1.0
+rundeckPluginVersion: 1.0
+author: Alex Honor
+date: 01/23/2014
+providers:
+  - name: doodah-node-step
+    service: RemoteScriptNodeStep
+    title: Doo Dah Node Step
+    description: Executes the doodah on a remote node
+    plugin-type: script
+    script-interpreter: /bin/bash
+    script-file: nodestep.sh
+    script-args: '${node.name} ${config.example} ${config.asif} ${config.avenger} ${config.vampires}'
+    config:
+      - type: String
+        name: example
+        title: Example
+        description: An example string
+        default: whatever
+      - type: Boolean
+        name: asif
+        title: As if
+        description: If something
+        default: true
+      - type: String
+        name: avenger
+        title: avenger
+        description: An avenger
+        default: hulk
+        values:
+          - hulk
+          - thing
+          - ironman
+          - captain_america
+          - thor
+      - type: Select
+        name: vampires
+        title: Vampires
+        description: What vampire
+        default: albert
+        values:
+          - albert
+          - ross
+          - simon
+          - bellfunkle
+          - droom
+
