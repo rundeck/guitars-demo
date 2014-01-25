@@ -55,25 +55,28 @@ chmod 755 ~rundeck
 
 # Configure the system
 
+# install mtl
 mkdir -p /var/rundeck/lib/mtl
 cp /vagrant/mtl/src/mtl /var/rundeck/lib/mtl/mtl
-chown -R rundeck:rundeck /var/rundeck/lib
+chown -R rundeck:rundeck /var/rundeck/lib/mtl
 
+# install the mtl-exec node executor.
 cp /vagrant/provisioning/rundeck/id_rsa* /var/lib/rundeck/.ssh/
 chown rundeck:rundeck /var/lib/rundeck/.ssh/
 cp /vagrant/plugins/mtl-exec-plugin/mtl-exec-plugin.zip /var/lib/rundeck/libext/
 chown rundeck /var/lib/rundeck/libext/mtl-exec-plugin.zip
 
+# install the resource model source plugin.
 cp /vagrant/plugins/git-nodes-plugin/dist/git-nodes-plugin.zip /var/lib/rundeck/libext
 chown rundeck /var/lib/rundeck/libext/git-nodes-plugin.zip
 
 # Rewrite the rundeck-config.properties to use the IP of this vagrant VM
 sed -i "s^grails.serverURL=.*^grails.serverURL=http://$RDIP:4440^g" /etc/rundeck/rundeck-config.properties 
 
-# Add the Anvils specific ACL
-cp /vagrant/provisioning/rundeck/acme.aclpolicy /etc/rundeck/
-chown rundeck:rundeck /etc/rundeck/acme.aclpolicy
-chmod 444 /etc/rundeck/acme.aclpolicy
+# Add the ACL
+cp /vagrant/provisioning/rundeck/*.aclpolicy /etc/rundeck/
+chown rundeck:rundeck /etc/rundeck/*.aclpolicy
+chmod 444 /etc/rundeck/*.aclpolicy
 
 # Add user/roles to the realm.properties
 cat >> /etc/rundeck/realm.properties <<EOF

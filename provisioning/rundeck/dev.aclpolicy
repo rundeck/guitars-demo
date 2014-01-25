@@ -1,0 +1,38 @@
+description: Acess for dev.
+context:
+  project: '.*'
+for:
+  resource:
+    - allow: read
+  job:
+    - equals:
+        group: 'web'
+        name: 'Status'
+      allow: [run,read]
+    - equals:
+        group: 'web'
+        name: 'Restart'
+      allow: [read]
+  node:
+    - matches:
+        nodename: 'db.*'
+      allow: [read]
+    - contains:
+        tags: www
+      allow: [read,run]
+by:
+  group: dev
+
+---
+
+description: Allow read access for projects.
+context:
+  application: 'rundeck'
+for:
+  resource:
+    - allow: [read]
+  project:
+    - allow: [read]
+by:
+  group: [dev]
+
