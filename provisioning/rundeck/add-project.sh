@@ -6,7 +6,7 @@ set -u
 
 if [ $# -ne 2 ]
 then
-    echo >&2 "usage: add-project project remotenode"
+    echo >&2 "usage: add-project project remote-node-ip"
     exit 1
 fi
 PROJECT=$1
@@ -47,7 +47,7 @@ do
     ROLE=$(expr $NAME : '\(.*\)[0-9]')
     echo "Adding node: ${NAME}."
     	xmlstarlet ed -P -S -L -s /project -t elem -n NodeTMP -v "" \
-    	    -i //NodeTMP -t attr -n "name" -v "${NAME}" \
+    	    -i //NodeTMP -t attr -n "name" -v "${NAME}.${PROJECT}.guitars" \
 	        -i //NodeTMP -t attr -n "tags" -v "${ROLE}" \
     	    -i //NodeTMP -t attr -n "hostname" -v "${REMOTE_NODE_IP}" \
         	-i //NodeTMP -t attr -n "username" -v "${NAME}" \
@@ -65,11 +65,11 @@ done
 # Add jobs, scripts and options
 # -----------------------------
 
-mkdir -p /var/www/html/$PROJECT/{scripts,options,jobs}
-cp -r /vagrant/provisioning/rundeck/jobs/*    /var/www/html/$PROJECT/jobs/
-cp -r /vagrant/provisioning/rundeck/scripts/* /var/www/html/$PROJECT/scripts/
-cp -r /vagrant/provisioning/rundeck/options/* /var/www/html/$PROJECT/options/
-chown -R rundeck:apache /var/www/html/$PROJECT/{scripts,options,jobs}
+mkdir -p /var/www/html/guitars/{scripts,options,jobs}
+cp -r /vagrant/provisioning/rundeck/jobs/*    /var/www/html/guitars/jobs/
+cp -r /vagrant/provisioning/rundeck/scripts/* /var/www/html/guitars/scripts/
+cp -r /vagrant/provisioning/rundeck/options/* /var/www/html/guitars/options/
+chown -R rundeck:apache /var/www/html/guitars/{scripts,options,jobs}
 
 # Configure directory resource source
 mkdir -p /var/rundeck/projects/$PROJECT/mtl
@@ -80,9 +80,10 @@ resources.source.2.config.directory=/var/rundeck/projects/$PROJECT/mtl
 #-
 EOF
 
+chown -R rundeck:rundeck  /var/rundeck/projects/$PROJECT/mtl
 
 # Add jobs
-for job in /var/www/html/$PROJECT/jobs/*.xml
+for job in /var/www/html/guitars/jobs/*.xml
 do
 	su - rundeck -c "rd-jobs load -p $PROJECT -f $job"
 done
