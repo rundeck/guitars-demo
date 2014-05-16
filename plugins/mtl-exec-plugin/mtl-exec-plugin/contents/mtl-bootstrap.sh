@@ -28,37 +28,29 @@ export RD_NODE_SCP_DIR
 #
 if ! ssh-exec test -d ./.mtl
 then
-    #ssh-copy ${MTL_FILE} >/dev/null
-    #commands=("chmod +x ./mtl;")
+    # Push the bootstrap commands into the array.
     commands=(${commands[@]:-} "mtl init --name ${RD_NODE_NAME};")
-    # Bootstrap the rest of the crucial attributes for remote execution. 
-    commands=(${commands[@]} "mtl attribute -n description   -v '$RD_NODE_DESCRIPTION';")
-    commands=(${commands[@]} "mtl attribute -n hostname      -v $RD_NODE_HOSTNAME;")
-    commands=(${commands[@]} "mtl attribute -n node-executor -v $RD_NODE_NODE_EXECUTOR;")
-    commands=(${commands[@]} "mtl attribute -n osFamily      -v $RD_NODE_OS_FAMILY;")
-    commands=(${commands[@]} "mtl attribute -n osName        -v $RD_NODE_OS_NAME;")
-    commands=(${commands[@]} "mtl attribute -n hostname      -v $RD_NODE_HOSTNAME;")
-    commands=(${commands[@]} "mtl attribute -n username      -v $RD_NODE_USERNAME;")
-    commands=(${commands[@]} "mtl attribute -n tags          -v $RD_NODE_TAGS;")
-    commands=(${commands[@]} "mtl attribute -n ssh-keypath   -v $RD_NODE_SSH_KEYPATH;")
 
+    # Execute the bootstrap commands.
     ssh-exec ${commands[@]}
 fi
 
 
 #	
-# Execute the command	
+# Execute the user command	
 #
 ssh-exec $@
 exit_code=$?
 
 #
-# Collect the data
+# Collect the data from mtl
 #
 resource_file=/var/rundeck/projects/${RD_RUNDECK_PROJECT}/mtl/${RD_NODE_NAME}.xml
 
 (ssh-exec mtl export) > ${resource_file} 
 
+#
+# Exit with the ssh code from the executed user command.
 exit ${exit_code:-0}
 
 

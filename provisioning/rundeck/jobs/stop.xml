@@ -1,10 +1,10 @@
-<joblist>   
- <job> 
-    <loglevel>INFO</loglevel>  
-    <sequence keepgoing="false" strategy="node-first"> 
-      <command> 
-        <errorhandler keepgoingOnSuccess="true"> 
-          <scriptargs>${option.dir}</scriptargs>  
+<joblist>
+  <job>
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <errorhandler keepgoingOnSuccess='true'>
+          <scriptargs>${option.dir}</scriptargs>
           <script><![CDATA[#!/bin/bash
 #/ usage: kill.sh ?dir?
 
@@ -18,11 +18,10 @@ set -u
 DIR=$1
 mtl attribute -n web:kill.time -v "$(date)"
 
-echo 'Web killed!'
-]]></script> 
-        </errorhandler>  
-        <description>stop web service</description>  
-        <scriptargs>${option.dir} ${option.method}</scriptargs>  
+echo 'Web killed!']]></script>
+        </errorhandler>
+        <description>stop web service</description>
+        <scriptargs>${option.dir} ${option.method}</scriptargs>
         <script><![CDATA[#!/bin/bash
 #/ usage: stop.sh ?dir? ?method? 
 set -eu
@@ -45,28 +44,26 @@ else
     echo "- Web already stopped."
 fi
 
-mtl attribute -n web:state -v DOWN
-
-]]></script> 
-      </command> 
-    </sequence>  
-    <description>stop the web servers</description>  
-    <name>stop</name>  
-    <context> 
-      <options> 
-        <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/>  
-        <option name="method" valuesUrl="http://localhost/guitars/options/stop-method.json" enforcedvalues="true" required="true"/> 
-      </options> 
-    </context>  
-    <dispatch> 
-      <threadcount>1</threadcount>  
-      <keepgoing>true</keepgoing>  
-      <excludePrecedence>true</excludePrecedence>  
-      <rankOrder>ascending</rankOrder> 
-    </dispatch>  
-    <nodefilters> 
-      <filter>tags: www</filter> 
-    </nodefilters>  
-    <group>web</group> 
-  </job> 
+mtl attribute -n web:state -v DOWN]]></script>
+      </command>
+    </sequence>
+    <description>stop the web servers</description>
+    <name>stop</name>
+    <context>
+      <options>
+        <option name='dir' value='$HOME/guitars' valuesUrl='http://localhost/guitars/options/guitars-dir.json' enforcedvalues='true' required='true' />
+        <option name='method' value='web:stop' valuesUrl='http://localhost/guitars/options/stop-method.json' enforcedvalues='true' required='true' />
+      </options>
+    </context>
+    <dispatch>
+      <threadcount>1</threadcount>
+      <keepgoing>true</keepgoing>
+      <excludePrecedence>true</excludePrecedence>
+      <rankOrder>ascending</rankOrder>
+    </dispatch>
+    <nodefilters>
+      <filter>tags: www</filter>
+    </nodefilters>
+    <group>web</group>
+  </job>
 </joblist>

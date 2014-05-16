@@ -6,11 +6,18 @@ for:
     - allow: read
   job:
     - match:
-        group: ''
+        group: 'web'
         name: '.*'
       allow: [run,read]
+  adhoc:
+    - allow: [read,run,kill]
   node:
-    - allow: [read,run] # allow read/run for all nodes
+    - match:
+        nodename: '.*'
+      allow: [read]
+    - contains:
+        tags: www
+      allow: [read,run]
 by:
   group: ops
 
@@ -25,4 +32,4 @@ for:
   project:
     - allow: [read]
 by:
-  group: [ops]
+  group: ops

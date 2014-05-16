@@ -1,4 +1,4 @@
 [ 
-  {name:"normal", value:"anvils:stop"}, 
-  {name:"force", value:"anvils:stop --force"} 
+  {name:"normal", value:"web:stop"}, 
+  {name:"force", value:"web:stop --force"} 
 ]

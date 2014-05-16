@@ -63,12 +63,17 @@ chown -R rundeck:rundeck /var/rundeck/lib/mtl
 # install the mtl-exec node executor.
 cp /vagrant/provisioning/rundeck/id_rsa* /var/lib/rundeck/.ssh/
 chown rundeck:rundeck /var/lib/rundeck/.ssh/
+
 cp /vagrant/plugins/mtl-exec-plugin/mtl-exec-plugin.zip /var/lib/rundeck/libext/
-chown rundeck /var/lib/rundeck/libext/mtl-exec-plugin.zip
 
 # install the resource model source plugin.
 cp /vagrant/plugins/git-nodes-plugin/dist/git-nodes-plugin.zip /var/lib/rundeck/libext
-chown rundeck /var/lib/rundeck/libext/git-nodes-plugin.zip
+
+# install the nexus plugin
+cp /vagrant/plugins/nexus-deploy-plugin/nexus-artifact-deploy-plugin.zip /var/lib/rundeck/libext
+
+chown -R rundeck /var/lib/rundeck/libext
+
 
 # Rewrite the rundeck-config.properties to use the IP of this vagrant VM
 sed -i "s^grails.serverURL=.*^grails.serverURL=http://$RDIP:4440^g" /etc/rundeck/rundeck-config.properties 

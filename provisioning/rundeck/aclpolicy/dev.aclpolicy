@@ -13,8 +13,10 @@ for:
         group: 'web'
         name: 'Restart'
       allow: [read]
+  adhoc:
+    - allow: [read,run,kill]
   node:
-    - matches:
+    - match:
         nodename: 'db.*'
       allow: [read]
     - contains:

@@ -3,8 +3,8 @@ Vagrant.configure("2") do |config|
   PROJECT="guitars"
   RDIP="192.168.50.3"
 
-  #RUNDECK_YUM_REPO="https://bintray.com/rundeck/ci-snapshot-rpm/rpm"
-  RUNDECK_YUM_REPO="https://bintray.com/gschueler/ci-rundeck2-rpm/rpm"
+#  RUNDECK_YUM_REPO="https://bintray.com/gschueler/ci-rundeck2-rpm/rpm"
+  RUNDECK_YUM_REPO="https://bintray.com/rundeck/rundeck-rpm/rpm"
   #RUNDECK_YUM_REPO="https://bintray.com/rundeck/candidate-rpm/rpm"
 
 
