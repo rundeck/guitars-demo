@@ -11,8 +11,6 @@
 #   the target port, if it exists
 # RD_NODE_SSH_KEYFILE: the "ssh-keyfile" attribute set for the node to
 #   specify the identity keyfile, if it exists
-# RD_CONFIG_SSH_KEY_STORAGE_PATH: the "ssh-key-storage-path" attribute set for the node to
-#   specify the identity keyfile
 # RD_NODE_SSH_OPTS: the "ssh-opts" attribute, to specify custom options
 #   to pass directly to ssh.  Eg. "-o ConnectTimeout=30"
 # RD_NODE_SSH_TEST: if "ssh-test" attribute is set to "true" then do
@@ -39,20 +37,12 @@ fi
 SSHOPTS="-p $PORT -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 
 #use ssh-keyfile node attribute from env vars
-if [[ -n "${RD_NODE_SSH_KEYFILE:-}" ]]
-then
+if [ ! -z "$RD_NODE_SSH_KEYFILE" ] ; then
     SSHOPTS="$SSHOPTS -i $RD_NODE_SSH_KEYFILE"
-elif [[ -n "${RD_CONFIG_SSH_KEY_STORAGE_PATH:-}" ]]
-then
-	mkdir -p "/tmp/mtl-exec"
-	SSH_KEY_STORAGE_PATH=$(mktemp "/tmp/mtl-exec/ssh-keyfile.$USER@$HOST.XXXXX")
-	echo "$RD_CONFIG_SSH_KEY_STORAGE_PATH" > $SSH_KEY_STORAGE_PATH
-    SSHOPTS="$SSHOPTS -i $SSH_KEY_STORAGE_PATH"
-    echo "DEBUG: $(date): mtl-exec: Generated keyfile from storage path for $USER@$HOST" >>/tmp/mtl.log
 fi
 
 #use any node-specified ssh options
-if [[ ! -z "$RD_NODE_SSH_OPTS" ]] ; then
+if [ ! -z "$RD_NODE_SSH_OPTS" ] ; then
     SSHOPTS="$SSHOPTS $RD_NODE_SSH_OPTS"
 fi
 
@@ -60,7 +50,7 @@ fi
 RUNSSH="ssh $SSHOPTS $USER@$HOST $CMD"
 
 #if ssh-test is set to "true", do a dry run
-if [[ "true" == "$RD_NODE_SSH_TEST" ]] ; then
+if [ "true" = "$RD_NODE_SSH_TEST" ] ; then
     echo "[mtl-exec]" $RUNSSH
     exit 0
 fi

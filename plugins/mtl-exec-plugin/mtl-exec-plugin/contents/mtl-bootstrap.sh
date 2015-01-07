@@ -47,6 +47,7 @@ exit_code=$?
 #
 resource_file=/var/rundeck/projects/${RD_RUNDECK_PROJECT}/mtl/${RD_NODE_NAME}.xml
 
+ 
 (ssh-exec mtl export) > ${resource_file} 
 
 #

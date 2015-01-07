@@ -1,0 +1,43 @@
+name: nexus-artifact-deploy
+rundeckPluginVersion: 1.0
+author: Alex Honor
+date: 04/14/2014
+version: 1.0
+providers:
+    - name: nexus-artifact-deploy
+      service: RemoteScriptNodeStep
+      title: Nexus Artifact Deploy
+      description: Deploy a nexus artifact
+      plugin-type: script
+      script-interpreter: /bin/bash
+      script-file: nexus-artifact-deploy.sh
+      script-args: ${config.repo} ${config.group} ${config.artifact} ${config.version} ${config.installdir}
+      config:
+        - type: String
+          name: version
+          title: artifact version
+          description: Enter the version for the artifact 
+        - type: String
+          name: repo
+          title: artifact repo
+          description: Enter the repo for the artifact
+        - type: String
+          name: group
+          title: artifact group
+          description: Enter the group ID for the artifact
+        - type: String
+          name: artifact
+          title: artifact id
+          description: Enter the ID of the artifact
+        - type: String
+          name: installdir
+          title: install dir
+          description: Enter the install directory
+    - name: nexus-artifact-copier
+      service: FileCopier
+      title: nexus artifact copier
+      description: Copies artifact to the node
+      plugin-type: script
+      script-interpreter: /bin/bash
+      script-file: ssh-copy.sh
+      script-args: ${node.username} ${node.hostname} ${file-copy.file}
