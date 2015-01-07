@@ -5,7 +5,7 @@ set -u
 
 # Process command line arguments.
 
-if [ $# -lt 2 ]
+if (( $# < 2 ))
 then
     echo >&2 "usage: $0 rdip rundeck_yum_repo"
     exit 1
@@ -18,14 +18,7 @@ RUNDECK_REPO_URL=$2
 # ----------------
 #
 # Utilities
-# Bootstrap a fedora repo to get xmlstarlet
-
-curl -s http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -o epel-release.rpm -z epel-release.rpm
-if ! rpm -q epel-release
-then
-    rpm -Uvh epel-release.rpm
-fi
-yum -y install xmlstarlet coreutils
+yum -y install coreutils
 
 #
 # JRE
