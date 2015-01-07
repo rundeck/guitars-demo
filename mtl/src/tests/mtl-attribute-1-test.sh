@@ -34,9 +34,8 @@ it_gets_value() {
     mtl init
 	mkdir -p .mtl/attributes
 	mkdir -p .mtl/attributes/node-executor
-	cat > .mtl/attributes/node-executor/metadata <<EOF
-NAME="node-executor"
-VALUE="mtl-exec"
+	cat > .mtl/attributes/node-executor/data <<EOF
+mtl-exec
 EOF
 		
 	test "mtl-exec" = "$(mtl attribute --name node-executor)"
@@ -46,7 +45,7 @@ EOF
 
 it_sets_value() {
 	source ../mtl
-	tmpdir=$(mktemp -d "/tmp/mtl-attribute.XXXX")
+	tmpdir=$(mktemp -d "/tmp/mtl-attribute-sets-value.XXXX")
 	pushd $tmpdir
     mtl init
 
@@ -63,8 +62,16 @@ it_sets_value() {
 	mtl attribute --name some.stuff:node-executor.bar --value bar
 	test "bar" = "$(mtl attribute --name some.stuff:node-executor.bar)"
 
+	# check values with multiple lines
+	lines="one
+two
+three"
+	mtl attribute --name multiline --value "$lines"
+	test $(wc -l .mtl/attributes/multiline/data|awk '{print $1}') = "3"
+	test "$lines" = "$(mtl attribute --name multiline)"
+
     popd
-	rm -r $tmpdir
+	#rm -r $tmpdir
 }
 
 it_sets_empty_value() {

@@ -28,14 +28,12 @@ it_matches_names() {
 
 	mkdir -p .mtl/attributes
 	mkdir -p .mtl/attributes/node-executor
-	cat > .mtl/attributes/node-executor/metadata <<-EOF
-	NAME="node-executor"
-	VALUE="mtl-exec"
+	cat > .mtl/attributes/node-executor/data <<-EOF
+	mtl-exec
 	EOF
 	mkdir -p .mtl/attributes/file-copier
-	cat > .mtl/attributes/file-copier/metadata <<-EOF
-	NAME="file-copier"
-	VALUE="mtl-copy"
+	cat > .mtl/attributes/file-copier/data <<-EOF
+	mtl-copy
 	EOF
 	
 	test file-copier = "$(mtl attributes --name file-copier)"
@@ -62,14 +60,12 @@ it_lists_values() {
 
 	mkdir -p .mtl/attributes
 	mkdir -p .mtl/attributes/file-copier
-	cat > .mtl/attributes/file-copier/metadata <<-EOF
-	NAME="file-copier"
-	VALUE="mtl-copy"
+	cat > .mtl/attributes/file-copier/data <<-EOF
+	mtl-copy
 	EOF
 	mkdir -p .mtl/attributes/node-executor
-	cat > .mtl/attributes/node-executor/metadata <<-EOF
-	NAME="node-executor"
-	VALUE="mtl-exec"
+	cat > .mtl/attributes/node-executor/data <<-EOF
+	mtl-exec
 	EOF
 	
 	test "file-copier mtl-copy"   = "$(mtl attributes --name file-copier --value)"

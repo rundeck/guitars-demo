@@ -1,0 +1,4 @@
+SCRIPT="
+uname -a
+date
+whoami"

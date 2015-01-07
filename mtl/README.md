@@ -130,18 +130,7 @@ Define status command with an inline script:
 
     mtl command -n status --script "curl -sf `mtl attribute -n estore:url`; exit $?"
 
-A stop command that executes a script file:
 
-    mtl command -n stop --scriptfile $(mtl info -n dir)/bin/stop
-
-Define stop command but scriptfile is a url address:
-
-    mtl command -n stop --scriptfile http://repo/script
-
-Delegate command to another module. 
-The other module must contain the same command.
-
-    mtl command -n start --delegate altmodule
 
 ### List commands
 

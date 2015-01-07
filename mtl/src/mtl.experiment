@@ -1,17 +1,5 @@
 #!/usr/bin/env bash
 
-# _mtl_sanity_ - More or less a ping/pong sanity test
-#
-#     mtl_sanity ?message?
-#
-# Arguments:
-#
-# * message:      Input message (optional)
-#
-# Notes:
-#
-# * Prints response
-#
 mtl_sanity() {
 	local message=$*
 	[[ -d "$(mtl_info -p DIR)/.mtl" ]] && {
@@ -35,7 +23,7 @@ mtl_sanity() {
 # * Conditions: If metadata not found, nothing is returned.
 #
 mtl_property_get() {
-    (( $# != 2 )) && {
+    [[ ! $# -eq 2 ]] && {
         echo >&2 'wrong # args: should be: mtl_property_get file property'; return 2;
     }
     local -r file="$1" property="$2"
@@ -65,7 +53,7 @@ mtl_property_get() {
 # * Multiple property assignments are made by specifying additional property=value bindings.
 #
 mtl_property_set() {
-    (( $# < 2 )) && {
+    [[ $# -lt 2 ]] && {
         mtl_die 'wrong # args: should be: mtl_property_set file property=value ?property=value?'
     }
     [[ ! -f $1 ]] && { echo >&2 "mtl_property_set: file not found: $1"; return 2; }
@@ -73,7 +61,7 @@ mtl_property_set() {
     local -r file="$1"
     local -a sed_patts=()
     shift ;
-    while (( "$#" > 0 ))
+    while [ "$#" -gt 0 ]
     do
         local property=${1%=*} value=${1#*=}
 
@@ -89,7 +77,7 @@ mtl_property_set() {
         shift; # move to next property=value binding.
     done
 
-    if (( ${#sed_patts[*]} > 0 ))
+    if [[ ${#sed_patts[*]} > 0 ]]
     then
         sed "${sed_patts[@]}" $file > $file.$$ 
         mv $file.$$ $file
@@ -102,7 +90,7 @@ mtl_property_set() {
 mtl_init() {
 	local usage='mtl init [--name|-n <>][--dir|-d <>][--repo|-r <>][--fetch]'
 	local name dir repo fetch
-	while (( "$#" > 0 )); do
+	while [ "$#" -gt 0 ]; do
     	OPT="$1"
     	case "$OPT" in
        		-n|--name) name=$2 ; shift ;;
@@ -137,7 +125,7 @@ mtl_info() {
 	local usage='mtl info --property|-p <> [--dir|-d <>]'
 	local property dir
 
-	while (( "$#" > 0 )); do
+	while [ "$#" -gt 0 ]; do
     	OPT="$1"
     	case "$OPT" in
        		-p|--property) property=$2 ; shift ;;
@@ -159,14 +147,14 @@ mtl_info() {
 mtl_attribute() {
 	local usage='mtl attribute --name|-n <> [--value|-v <>] [--clear|--remove]'
 	local name value value_flag clear remove
-	while (( "$#" > 0 )); do
+	while [ "$#" -gt 0 ]; do
     	OPT="$1"
     	case "$OPT" in
        		-n|--name) name="$2" ; shift ;;
+       		-v|--value) value="$2" value_flag=true ; shift ;;
        		--clear) clear=true ;;
        		--remove) remove=true ;;
 			--usage) printf "%s\n" "$usage" ; return 0 ;;
-       		-v|--value) value="$2" value_flag=true ; shift ;;
         	# end of options, just arguments left
         	*) 
 			break
@@ -176,25 +164,27 @@ mtl_attribute() {
 	[[ -z "${name:-}" ]] && { echo >&2 "$usage"; return 2; }
 
 	local mtl_home=$(mtl info --property DIR)
-	local attribute="${mtl_home:=$(pwd)}/.mtl/attributes/${name}"
+	local attribute="${mtl_home:=$(pwd)}/.mtl/attributes/${name}/metadata"
 
 	[[ "true" == ${clear:-} ]] && {
-		# truncate the data file with a little file redirection trickery.
-		> ${attribute}/data; 
+		mtl_property_set ${attribute} VALUE=""
 		return $?
 	}
 	[[ "true" == ${remove:-} ]] && {
-		[[ -d ${attribute} ]] && rm -fr ${attribute}
+		[[ -f ${attribute} ]] && rm -fr $(dirname ${attribute})
 		return $?
 	}
 	[[ -z "${value_flag}" ]] && {
-		cat ${attribute}/data
+		mtl_property_get ${attribute} VALUE
 		return $?
 	}
 
 	# Set the attribute value
-	[[ ! -d ${attribute} ]] &&	mkdir -p ${attribute}
-	echo "$value" > ${attribute}/data
+	[[ ! -f ${attribute} ]] && {
+		mkdir -p $(dirname ${attribute})
+		touch $attribute
+	}
+	mtl_property_set ${attribute} VALUE="$value"
 
     return $?
 }
@@ -206,7 +196,7 @@ mtl_attributes() {
 	mtl_home=$(mtl info --property DIR)
 	attributes="${mtl_home:=$(pwd)}/.mtl/attributes"
 
-	while (( "$#" > 0 )); do
+	while [ "$#" -gt 0 ]; do
     	OPT="$1"
     	case "$OPT" in
        		-n|--name) name=$2 ; shift ;;
@@ -219,31 +209,127 @@ mtl_attributes() {
 	done
 	: ${name:=*}
 	
-	if [[ "${value_flag:-}" != show_value ]]
-	then
+	if [[ "${value_flag:-}" != show_value ]]; then
 		local attrs=()
-		for attr in ${attributes}/$name
+		for f in ${attributes}/$name/metadata
 		do
-			[[ -f $attr/data ]] || continue
-			local attr_name=$(basename $attr)
+			[[ -f $f ]] || continue
+			local attr_name=$(basename $(dirname $f))
 			[[ -z "${attrs:-}" ]] && attrs=($attr_name) || attrs=( ${attrs[*]:-} $attr_name)
 		done
 		echo "${attrs[*]:-}"
 		return 0
 	fi
 	
-	for attr_data in ${attributes}/$name/data
+	for f in ${attributes}/$name/metadata
 	do
-		[[ -f $attr_data ]] || continue
-		local attr_name=$(basename $(dirname $attr_data))
+		[[ -f $f ]] || continue
+		local attr_name=$(basename $(dirname $f))
 		echo "$attr_name $(mtl_attribute --name $attr_name)"
+	done
+}
+
+
+mtl_command() {
+	local usage='mtl command --name|-n <> [--script|-s <>] [--clear|--remove]'
+	local name value value_flag clear remove
+	while [ "$#" -gt 0 ]; do
+    	OPT="$1"
+    	case "$OPT" in
+       		-n|--name) name="$2" ; shift ;;
+       		-s|--script) script="$2" value_flag=true ; shift ;;
+       		--clear) clear=true ;;
+       		--remove) remove=true ;;
+			--usage) printf "%s\n" "$usage" ; return 0 ;;
+        	# end of options, just arguments left
+        	*) 
+			break
+    	esac
+    	shift
+	done
+	[[ -z "${name:-}" ]] && { echo >&2 "$usage"; return 2; }
+
+	local mtl_home=$(mtl info --property DIR)
+	local cmd="${mtl_home:=$(pwd)}/.mtl/commands/${name}/metadata"
+
+	[[ "true" == ${clear:-} ]] && {
+		mtl_property_set ${cmd} SCRIPT=""
+		return $?
+	}
+	[[ "true" == ${remove:-} ]] && {
+		[[ -f ${cmd} ]] && rm -fr $(dirname ${cmd})
+		return $?
+	}
+	[[ -z "${value_flag}" ]] && {
+		mtl_property_get ${cmd} SCRIPT
+		return $?
+	}
+
+	# Bootstrap the metadata file.
+	[[ ! -f ${cmd} ]] && {
+		mkdir -p $(dirname ${cmd})
+		touch $cmd
+	}
+	# Set the cmd script value.
+	mtl_property_set ${cmd} SCRIPT="$script"
+
+    return $?	
+}
+
+
+mtl_builtins() {
+	local builtins="init info attribute attributes command commands export"
+	for builtin in ${builtins}
+	do
+		printf "%s\t%s\n" "$builtin"
+	done
+
+}
+
+mtl_commands() {
+	local usage='mtl commands -n|--name <> [-s|--script <>]'
+	local name value mtl_home commands
+
+	mtl_home=$(mtl info --property DIR)
+	commands="${mtl_home:=$(pwd)}/.mtl/commands"
+
+	while [ "$#" -gt 0 ]; do
+    	OPT="$1"
+    	case "$OPT" in
+       		-n|--name) name=$2 ; shift ;;
+       		-v|--script*) value_flag=show_value ;;
+			--usage) printf "%s\n" "$usage" ; return 0 ;;
+			*) 
+			break
+    	esac
+    	shift
+	done
+	: ${name:=*}
+	
+	if [[ "${value_flag:-}" != show_value ]]; then
+		local attrs=()
+		for f in ${commands}/$name/metadata
+		do
+			[[ -f $f ]] || continue
+			local cmd_name=$(basename $(dirname $f))
+			[[ -z "${cmds:-}" ]] && cmds=($cmd_name) || cmds=( ${cmds[*]:-} $cmd_name)
+		done
+		echo "${cmds[*]:-}"
+		return 0
+	fi
+	
+	for f in ${commands}/$name/metadata
+	do
+		[[ -f $f ]] || continue
+		local cmd_name=$(basename $(dirname $f))
+		echo "$cmd_name $(mtl_command --name $cmd_name)"
 	done
 }
 
 mtl_export() {
 	local usage='mtl export'
 
-	while (( "$#" > 0 )); do
+	while [ "$#" -gt 0 ]; do
 	OPT="$1"
 	case "$OPT" in
 		--usage) printf "%s\n" "$usage" ; return 0 ;;
@@ -268,7 +354,7 @@ EOF
 mtl_fetch() {
 	local usage='mtl fetch [--repo|-r <>]'
 	local repo
-	while (( "$#" > 0 )); do
+	while [ "$#" -gt 0 ]; do
     	OPT="$1"
     	case "$OPT" in
        		-r|--repo) repo=$2 ; shift ;;
@@ -297,7 +383,7 @@ mtl_fetch() {
 
 mtl_publish() {
 	local usage='mtl publish'
-	while (( "$#" > 0 )); do
+	while [ "$#" -gt 0 ]; do
     	OPT="$1"
     	case "$OPT" in
 			--usage) printf "%s\n" "$usage" ; return 0 ;;
@@ -325,21 +411,16 @@ mtl_publish() {
     fi
 }
 
-mtl_commands() {
-	local builtins="init info attribute attributes export"
-	for builtin in ${builtins}
-	do
-		printf "%s\t%s\n" "$builtin"
-	done
-}
 
 mtl() {	
 	local usage="mtl [--usage][--sanity] <command> [<options>]"
-	(( $# == 0 )) && { printf >&2 "$usage\n"; return 0; }
+	[[ $# -eq 0 ]] && { printf >&2 "$usage\n"; return 0; }
 	
 	case $1 in
+		builtins) shift;   mtl_builtins "$@"  ;;	
 		init) shift;       mtl_init "$@"  ;;
 		info) shift;       mtl_info "$@"  ;;
+		command) shift;    mtl_command "$@"  ;;
 		commands) shift;   mtl_commands "$@"  ;;
 		attribute) shift;  mtl_attribute "$@"  ;;
 		attributes) shift; mtl_attributes "$@"  ;;
