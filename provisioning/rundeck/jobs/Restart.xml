@@ -1,7 +1,14 @@
 <joblist>   
   <job> 
     <loglevel>INFO</loglevel>  
-    <sequence keepgoing="false" strategy="node-first"> 
+    <sequence keepgoing="false" strategy="node-first">
+      <command>
+        <step-plugin type='JIRA-Issue-Exists'>
+          <configuration>
+            <entry key='issue-key' value='${option.jira_issue}' />
+          </configuration>
+        </step-plugin>
+      </command>     
       <command> 
         <jobref name="stop" group="web"> 
           <arg line="-dir ${option.dir} -method ${option.method}"/> 
@@ -13,14 +20,41 @@
         </jobref> 
       </command> 
     </sequence>  
-    <description>restart the web servers</description>  
+    <description><![CDATA[restart the web servers.
+
+<img src="http://@RD_IP@/guitars/images/change-correlation.png"/>
+    ]]></description>  
     <name>Restart</name>  
     <context> 
-      <options> 
+      <options preserveOrder="true"> 
+        <option name="jira_issue" required="true" valuesUrl="http://localhost/guitars/options/issues.json"/>  
         <option name="dir" valuesUrl="http://localhost/guitars/options/guitars-dir.json" enforcedvalues="true" required="true"/>  
         <option name="method" valuesUrl="http://localhost/guitars/options/stop-method.json" enforcedvalues="true"/> 
       </options> 
-    </context>  
+    </context>
+    <notification>
+      <onfailure>
+        <plugin type='HipChatNotification'>
+          <configuration>
+            <entry key='apiAuthToken' value='3c487171c6bf940d31ae6262920604' />
+            <entry key='room' value='anvils' />
+          </configuration>
+        </plugin>
+      </onfailure>
+      <onsuccess>
+        <plugin type='JIRA'>
+          <configuration>
+            <entry key='issue key' value='${option.jira_issue}' />
+          </configuration>
+        </plugin>
+        <plugin type='HipChatNotification'>
+          <configuration>
+            <entry key='room' value='anvils' />
+            <entry key='apiAuthToken' value='3c487171c6bf940d31ae6262920604' />
+          </configuration>
+        </plugin>
+      </onsuccess>
+    </notification>    
     <dispatch> 
       <threadcount>1</threadcount>  
       <keepgoing>true</keepgoing>  

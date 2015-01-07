@@ -3,7 +3,14 @@
     <loglevel>INFO</loglevel>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
-        <description>Run deploy script</description>
+        <step-plugin type='JIRA-Issue-Exists'>
+          <configuration>
+            <entry key='issue-key' value='${option.jira_issue}' />
+          </configuration>
+        </step-plugin>
+      </command>      
+      <command>
+        <description>Update software version.</description>
         <scriptargs>${option.version}</scriptargs>
         <script><![CDATA[#!/usr/bin/env bash
 VERSION=$1
@@ -21,10 +28,14 @@ echo "Updated to version: ${VERSION}"]]></script>
         <jobref name='start' group='web' />
       </command>
     </sequence>
-    <description>the deploy the guitars app</description>
+    <description><![CDATA[deploy the guitars app.
+
+<img src="http://@RD_IP@/guitars/images/change-correlation.png"/>
+        ]]></description>
     <name>Deploy</name>
     <context>
-      <options>
+      <options preserveOrder="true">
+        <option name="jira_issue" required="true" valuesUrl="http://localhost/guitars/options/issues.json"/>        
         <option name='version' values='1.0,1.1,2.0,2.1' enforcedvalues='true' required='true'>
           <description>the package version</description>
         </option>
@@ -40,5 +51,28 @@ echo "Updated to version: ${VERSION}"]]></script>
       <filter>tags: www</filter>
     </nodefilters>
     <group>release</group>
+   <notification>
+      <onfailure>
+        <plugin type='HipChatNotification'>
+          <configuration>
+            <entry key='apiAuthToken' value='3c487171c6bf940d31ae6262920604' />
+            <entry key='room' value='anvils' />
+          </configuration>
+        </plugin>
+      </onfailure>
+      <onsuccess>
+        <plugin type='JIRA'>
+          <configuration>
+            <entry key='issue key' value='${option.jira_issue}' />
+          </configuration>
+        </plugin>
+        <plugin type='HipChatNotification'>
+          <configuration>
+            <entry key='room' value='anvils' />
+            <entry key='apiAuthToken' value='3c487171c6bf940d31ae6262920604' />
+          </configuration>
+        </plugin>
+      </onsuccess>
+    </notification>        
   </job>
 </joblist>

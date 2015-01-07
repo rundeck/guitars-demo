@@ -11,8 +11,8 @@
 set -e
 set -u
 
-[[ $# != 1 ]] && {
-    grep '^#/ usage:' <"$0" | cut -c4- >&2
+(( $# != 1 )) && {
+  grep '^#/ usage:' <"$0" | cut -c4- >&2
 	exit 2	
 }
 DIR=$1
@@ -25,8 +25,8 @@ echo 'Web killed!']]></script>
         <script><![CDATA[#!/bin/bash
 #/ usage: stop.sh ?dir? ?method? 
 set -eu
-[[ $# != 2 ]] && {
-    grep '^#/ usage:' <"$0" | cut -c4- >&2
+(( $# != 2 )) && {
+  grep '^#/ usage:' <"$0" | cut -c4- >&2
 	exit 2
 }
 DIR=$1
@@ -39,7 +39,7 @@ then
 	rm -f $DIR/pid
 	echo "- Web stopped (pid=${pid}) using method: $METHOD"
 
-    mtl attribute -n web:pid --remove     
+  mtl attribute -n web:pid --remove     
 else
     echo "- Web already stopped."
 fi

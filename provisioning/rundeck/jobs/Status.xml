@@ -10,8 +10,8 @@
         <script><![CDATA[#!/bin/bash
 #/ usage: $0  ?dir?
 set -eu
-[[ $# != 1 ]] && {
-    grep '^#/ usage:' <"$0" | cut -c4- >&2
+(( $# != 1 )) && {
+  grep '^#/ usage:' <"$0" | cut -c4- >&2
 	exit 2	
 }
 
@@ -33,7 +33,10 @@ mtl attributes -n "web:*" -v
 exit $status]]></script> 
       </command> 
     </sequence>  
-    <description>Check the status of the app</description>  
+    <description><![CDATA[Check the status of the app
+
+<img src="http://@RD_IP@/guitars/images/alert-status-distribution.png"/>
+      ]]></description>  
     <name>Status</name>  
     <context> 
       <options> 

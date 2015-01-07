@@ -11,18 +11,20 @@
       <command> 
         <scriptargs>${option.catalog}</scriptargs>  
         <script><![CDATA[#!/bin/bash
-set -eu
 CATALOG=$1
 echo "# Rebuild catalog: $CATALOG"
-echo ""
-echo "- customer: ${RD_NODE_ANVILS_CUSTOMER}"
-echo "- location: ${RD_NODE_ANVILS_LOCATION}"
 echo "- database: ${RD_NODE_NAME:-}"
 echo "Completed."
 exit $?]]></script> 
       </command> 
     </sequence>  
-    <description>rebuild the catalog data</description>  
+    <description><![CDATA[rebuild the catalog data
+
+<img src="http://@RD_IP@/guitars/images/catalog-database.png"/>
+
+<p>Backup using RMAN. Store metadata about backups of target. 
+  Store metadata about backups of catalog. Uea Control file for autobackup.
+</p>]]></description>  
     <name>nightly_catalog_rebuild</name>  
     <context> 
       <options> 

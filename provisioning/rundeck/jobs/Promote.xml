@@ -6,27 +6,25 @@
         <scriptargs>${option.repository} ${option.release} ${option.packages}</scriptargs>  
         <script><![CDATA[#!/bin/bash
 set -eu
-[[ $# != 3 ]] && {
+(( $# != 3 )) && {
   echo >&2 'usage: $0 repository release pkg1,pkg2,pkgN'
   exit 2
 }
-REPOSITORY=$1 RELEASE=$2 PACKAGELIST=$3
+REPOSITORY=$1 RELEASE=$2 PACKAGE_LIST=$3
+PACKAGES=( ${PACKAGE_LIST//,/ } )
 
-echo "# PROMOTE"
-echo "## $REPOSITORY/$RELEASE"
-echo "## Promote $REPOSITORY/$RELEASE..."
+cat <<EOM
+# PROMOTE
+## Promote $REPOSITORY/$RELEASE...
 
-PACKAGES=( ${PACKAGELIST//,/ } )
-echo "number  packages: ${#PACKAGES[*]}"
-echo
-for package in ${PACKAGES[*]:-}
+package count: ${#PACKAGES[*]:-}
+
+EOM
+
+for package in ${PACKAGES[*]}
 do
-   echo "- $REPOSITORY/$RELEASE/$package"
+   printf -- "- $REPOSITORY/$RELEASE/$package\n"
 done
-
-#mtl attribute -n release:repo -v $REPOSITORY
-#mtl attribute -n release:name -v $RELEASE
-#mtl attribute -n release:packages -v "$PACKAGELIST"
 
 exit $?]]></script> 
       </command> 
