@@ -6,10 +6,9 @@ echo "Installing RUNDECK Plugins"
 set -eu
 
 # Hipchat
-[[ ! -f /var/lib/rundeck/libext/rundeck-hipchat-plugin-1.0.0.jar ]] && {
-    cp /vagrant/provisioning/rundeck/plugins/rundeck-hipchat-plugin-1.0.0.jar /var/lib/rundeck/libext/
-
-	printf -- "  - %s\n" rundeck-hipchat-plugin-1.0.0.jar
+[[ ! -f /var/lib/rundeck/libext/rundeck-hipchat-plugin-1.5.0.jar ]] && {
+	curl -sfL -o /var/lib/rundeck/libext/rundeck-hipchat-plugin-1.5.0.jar 'http://search.maven.org/remotecontent?filepath=com/hbakkum/rundeck/plugins/rundeck-hipchat-plugin/1.5.0/rundeck-hipchat-plugin-1.5.0.jar'
+	printf -- "  - %s\n" rundeck-hipchat-plugin-1.5.0.jar
 }
 # nexus
 #[[ ! -f /var/lib/rundeck/libext/nexus-step-plugins-1.0.0.jar ]] && {
