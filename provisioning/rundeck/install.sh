@@ -23,7 +23,7 @@ yum -y install coreutils
 #
 # JRE
 #
-yum -y install java-1.6.0
+yum -y install java-1.7.0
 #
 # Rundeck 
 #
@@ -70,6 +70,12 @@ chown -R rundeck /var/lib/rundeck/libext
 
 # Rewrite the rundeck-config.properties to use the IP of this vagrant VM
 sed -i "s^grails.serverURL=.*^grails.serverURL=http://$RDIP:4440^g" /etc/rundeck/rundeck-config.properties 
+cat >> /etc/rundeck/rundeck-config.properties <<EOF
+# Enable storage facility feature to store mtl data.
+feature.incubator.storage=true
+rundeck.projectsStorageType=filesystem
+#rundeck.projectsStorageType=db
+EOF
 
 # Add the ACL
 cp /vagrant/provisioning/rundeck/aclpolicy/* /etc/rundeck/

@@ -28,7 +28,7 @@ exit $?]]></script>
     <name>nightly_catalog_rebuild</name>  
     <context> 
       <options> 
-        <option name="catalog" values="inventory,partner,shipping-rates" enforcedvalues="true" required="true"> 
+        <option name="catalog" values="inventory,partner,shipping-rates" enforcedvalues="true" required="true" value="inventory"> 
           <description>catalog name</description> 
         </option> 
       </options> 

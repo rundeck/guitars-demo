@@ -10,16 +10,7 @@
         </step-plugin>
       </command>      
       <command>
-        <description>Update software version.</description>
-        <scriptargs>${option.version}</scriptargs>
-        <script><![CDATA[#!/usr/bin/env bash
-VERSION=$1
-
-sleep 5
-
-mtl attribute -n package:guitar -v ${VERSION}
-
-echo "Updated to version: ${VERSION}"]]></script>
+        <jobref name='install' group='web' />
       </command>
       <command>
         <jobref name='stop' group='web' />

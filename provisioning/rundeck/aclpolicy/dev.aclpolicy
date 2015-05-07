@@ -1,6 +1,6 @@
-description: Acess for dev.
+description: 'Given user in group "dev" and for jobs matching "web/Status", then allow action [read,run] on nodes tagged "www".'
 context:
-  project: '.*'
+  project: 'guitars-production'
 for:
   resource:
     - allow: read
@@ -13,12 +13,7 @@ for:
         group: 'web'
         name: 'Restart'
       allow: [read]
-  adhoc:
-    - allow: [read,run,kill]
   node:
-    - match:
-        nodename: 'db.*'
-      allow: [read]
     - contains:
         tags: www
       allow: [read,run]
@@ -27,7 +22,35 @@ by:
 
 ---
 
-description: Allow read access for projects.
+description: 'Given user in group "dev" and for adhoc commands and jobs matching "web/.*", then allow action [read,run] on nodes tagged "www" or "app".'
+context:
+  project: 'guitars-stage'
+for:
+  resource:
+    - allow: read
+  job:
+    - match:
+        group: 'web'
+        name: '.*'
+      allow: [run,read]
+  adhoc:
+    - allow: [read,run,kill]
+  node:
+    - match:
+        nodename: 'db.*'
+      allow: [read]
+    - contains:
+        tags: app
+      allow: [read,run]
+    - contains:
+        tags: www
+      allow: [read,run]
+by:
+  group: dev
+
+---
+
+description: 'Allow "dev" read access for projects.'
 context:
   application: 'rundeck'
 for:
@@ -36,5 +59,19 @@ for:
   project:
     - allow: [read]
 by:
-  group: [dev]
+  group: dev
+
+---
+
+description: 'Allow "dev" read access to www keys'
+for:
+  storage:
+  - allow: read
+    match:
+      name: id_rsa
+      path: keys/guitars-(stage|production)/www.*
+context:
+  application: rundeck
+by:
+  group: dev
 

@@ -1,6 +1,6 @@
-description: Acess for ops.
+description: 'Given user in group "ops" and for adhoc commands and jobs matching "web/.*", then allow action [read,run] on nodes tagged "www" or "app".'
 context:
-  project: '.*'
+  project: 'guitars-production'
 for:
   resource:
     - allow: read
@@ -13,23 +13,43 @@ for:
     - allow: [read,run,kill]
   node:
     - match:
-        nodename: '.*'
+        nodename: 'db.*'
       allow: [read]
     - contains:
         tags: www
+      allow: [read,run]
+    - contains:
+        tags: app
       allow: [read,run]
 by:
   group: ops
 
 ---
 
-description: Allow read access for projects.
+description: 'Allow "ops" read access to "guitars-production" project.'
 context:
   application: 'rundeck'
 for:
   resource:
     - allow: [read]
   project:
-    - allow: [read]
+    - match:
+        name: 'guitars-production'
+      allow: [read]
 by:
   group: ops
+
+---
+
+description: 'Allow "ops" read access to www keys'
+for:
+  storage:
+  - allow: read
+    match:
+      name: id_rsa
+      path: keys/guitars-production/www.*
+context:
+  application: rundeck
+by:
+  group: ops
+

@@ -47,13 +47,30 @@ fi
 yum -y install xmlstarlet
 
 
-# Create an example project
+# Create the project
 # --------------------------
+
+
+# Generate the key value pairs used for the call to `rd-project`.
+RD_PROJECT_PARAMS=(
+    --project.plugin.WorkflowStep.JIRA-Issue-Exists.url=${JIRA_url}
+    --project.plugin.WorkflowStep.JIRA-Issue-Exists.login=${JIRA_login}
+    --project.plugin.WorkflowStep.JIRA-Issue-Exists.password=${JIRA_password}
+    --project.plugin.Notification.JIRA.url=${JIRA_url}
+    --project.plugin.Notification.JIRA.login=${JIRA_login}
+    --project.plugin.Notification.JIRA.password=${JIRA_password}
+    --project.plugin.Notification.HipChatNotification.room=${HipChatNotification_room}
+    --project.plugin.Notification.HipChatNotification.apiAuthToken=${HipChatNotification_apiAuthToken}
+)
+
+
 echo "Creating project $PROJECT..."
 
-su - rundeck -c "rd-project -a create -p $PROJECT"
+su - rundeck -c "rd-project -a create -p $PROJECT ${RD_PROJECT_PARAMS[*]}"
 
 # Run simple commands to double check.
+
+echo "Executing dispatch -p $PROJECT ..."
 su - rundeck -c "dispatch -p $PROJECT"
 # Run an adhoc command.
 su - rundeck -c "dispatch -p $PROJECT -f -- whoami"
@@ -65,6 +82,18 @@ su - rundeck -c "dispatch -p $PROJECT -f -- whoami"
 NODES=( www{1,2} app{1,2} db1 )
 
 RESOURCES=${PROJECT_DIR}/etc/resources.xml
+
+if [[ ! -f $RESOURCES ]]
+then
+    mkdir -p $(dirname $RESOURCES)
+    cat >> $RESOURCES <<EOF
+    <project>
+    </project>
+EOF
+    chown -R rundeck:rundeck $(dirname $RESOURCES)
+
+    echo "Generated $RESOURCES file because it was not already there."
+fi
 
 which xmlstarlet >/dev/null|| { echo "FAIL: xmlstarlet not found." ; exit 1 ; }
 
@@ -120,30 +149,6 @@ do
 done
 
 
-# Configure plugins
-# ------------------
-cat >> ${PROJECT_DIR}/etc/project.properties <<EOF
-#+
-project.plugin.WorkflowStep.JIRA-Issue-Exists.url=${JIRA_url}
-project.plugin.WorkflowStep.JIRA-Issue-Exists.login=${JIRA_login}
-project.plugin.WorkflowStep.JIRA-Issue-Exists.password=${JIRA_password}
-#-
-EOF
-
-cat >> ${PROJECT_DIR}/etc/project.properties <<EOF
-#+
-project.plugin.Notification.JIRA.url=${JIRA_url}
-project.plugin.Notification.JIRA.login=${JIRA_login}
-project.plugin.Notification.JIRA.password=${JIRA_password}
-#-
-EOF
-
-cat >> ${PROJECT_DIR}/etc/project.properties <<EOF
-#+
-project.plugin.Notification.HipChatNotification.room=${HipChatNotification_room}
-project.plugin.Notification.HipChatNotification.apiAuthToken=${HipChatNotification_apiAuthToken}
-#-
-EOF
 
 # Add jobs, scripts and options
 # -----------------------------

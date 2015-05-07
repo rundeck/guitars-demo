@@ -1,0 +1,38 @@
+<joblist>
+  <job>
+    <loglevel>INFO</loglevel>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <description>update web software version</description>
+        <scriptargs>${option.version}</scriptargs>
+        <script><![CDATA[#!/usr/bin/env bash
+VERSION=$1
+
+sleep 5
+
+mtl attribute -n package:guitar -v ${VERSION}
+
+echo "Updated to version: ${VERSION}"]]></script>
+      </command>
+    </sequence>
+    <description>install the web service</description>
+    <name>install</name>
+    <context>
+      <options>
+        <option name='version' values='1.0,1.1,2.0,2.1' enforcedvalues='true' required='true'>
+          <description>the package version</description>
+        </option>
+      </options>
+    </context>
+    <dispatch>
+      <threadcount>1</threadcount>
+      <keepgoing>true</keepgoing>
+      <excludePrecedence>true</excludePrecedence>
+      <rankOrder>ascending</rankOrder>
+    </dispatch>
+    <nodefilters>
+      <filter>tags: www</filter>
+    </nodefilters>
+    <group>web</group>
+  </job>
+</joblist>

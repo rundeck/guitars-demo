@@ -1,11 +1,11 @@
-description: Acesss for releng.
+description: 'Given user in group "releng" and for job matches "release/.*", then allow action [read,run].'
 context:
-  project: '.*'
+  project: '(guitars-stage|guitars-production)'
 for:
   resource:
     - allow: read
   job:
-    - equals:
+    - match:
         group: 'release'
         name: '.*'
       allow: [run,read]
@@ -16,13 +16,15 @@ by:
 
 ---
 
-description: Allow read access for projects.
+description: Allow read access for the guitars-stage and guitars-production projects.
 context:
   application: 'rundeck'
 for:
   resource:
     - allow: [read]
   project:
-    - allow: [read]
+    - match:
+        name: '(guitars-stage|guitars-production)'
+      allow: [read]
 by:
   group: [releng]
