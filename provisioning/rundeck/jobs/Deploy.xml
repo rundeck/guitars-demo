@@ -3,6 +3,9 @@
     <loglevel>INFO</loglevel>
     <sequence keepgoing='false' strategy='node-first'>
       <command>
+	<errorhandler keepgoingOnSuccess='true'>
+ 	  <exec>echo &gt;&amp;2 "Ignore the ticket check if it fails"</exec>
+	</errorhandler>
         <step-plugin type='JIRA-Issue-Exists'>
           <configuration>
             <entry key='issue-key' value='${option.jira_issue}' />
@@ -10,7 +13,9 @@
         </step-plugin>
       </command>      
       <command>
-        <jobref name='install' group='web' />
+        <jobref name='install' group='web' >
+           <arg line='-version ${option.version}' />
+        </jobref>
       </command>
       <command>
         <jobref name='stop' group='web' />
